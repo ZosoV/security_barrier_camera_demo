@@ -2,7 +2,7 @@
 
 This a modification of the original security Barrier Camera C++ Demo from openvino. The idea is use the detection of these models for two objectives:
 
-- Get each frame of a video where it is identified a vehicle or plate. Store the frame and its respective normalized boxes of the plates and vehicles in `.txt` per each frame. The file `<num_fram>.txt` follows the Yolo convetions.
+- Get each frame of a video where it is identified a vehicle or plate. Store the frame and its respective normalized boxes of the plates and vehicles in `.txt` per each frame. The file `<num_fram>.txt` follows the Yolo conventions.
 
     `class_name top left width height`
 
