@@ -30,9 +30,12 @@
 
 using namespace InferenceEngine;
 
+
+//MODIFICATION: setting the path where we store the frames and plates
 const std::string FramesPath = "/home/ubuntu/Project/demoExtraData/frames/";
 const std::string PlatesPath = "/home/ubuntu/Project/demoExtraData/plates/";
 
+//MODIFICATION: setting the final size of the crops plates
 const int plate_width = 94;
 const int plate_height = 24;
 
@@ -366,7 +369,8 @@ void Drawer::process() {
         }
         cv::putText(mat, context.drawersContext.outThroughput.str(), cv::Point2f(15, 35), cv::FONT_HERSHEY_TRIPLEX, 0.7, cv::Scalar{255, 255, 255});
 
-        cv::imshow("Detection results", firstGridIt->second.getMat());
+        //MODIFICATION:
+        //cv::imshow("Detection results", firstGridIt->second.getMat());
         context.drawersContext.prevShow = std::chrono::steady_clock::now();
         const int key = cv::waitKey(context.drawersContext.pause);
         if (key == 27 || 'q' == key || 'Q' == key || !context.isVideo) {
@@ -382,24 +386,22 @@ void Drawer::process() {
     }
     context.drawersContext.drawerMutex.unlock();
 }
-void recordFrame(bool release = false){
-	cv::Size dimension = Size(1920,1080);
-	static cv::VideoWriter out = cv::VideoWriter(FramesPath + "demo_video.avi",cv2::VideoWriter_fourcc(*'XVID'),dimension);
-}
 
+//MODIFICATION: generates the id of the frames
 int generator(int n = 1) 
 { 
  static long long int idx = n;
  return idx++;
 }
 
-
+//MODIFICATION: generates the ids of crops plates
 int generator2(int n = 1) 
 { 
  static long long int idx2 = n;
  return idx2++;
 }
 
+//MODIFICATION: Function to write the boundig boxes in a .txt
 void WriteInFILE(std::string file_name, std::string class_name, cv::Rect rect, float width, float height){
     std::ofstream outfile;
     outfile.open(FramesPath + file_name, std::ios_base::app);
@@ -418,7 +420,7 @@ void WriteInFILE(std::string file_name, std::string class_name, cv::Rect rect, f
 }
 
 void ResAggregator::process() {
-    //Variables to store the frames
+    //MODIFICATION: Variables to store the frames
     std::string plate_number = "";
     std::string frame_number = "";
     cv::Mat cropedImage;
@@ -431,13 +433,13 @@ void ResAggregator::process() {
     context.frameCounter++;
     if (!FLAGS_no_show) {
 
-	//Current frame number
+	//MODIFICATION:Current frame number
 	frame_number = std::to_string(generator(268402));
 	frame_number.insert(0, 12 - frame_number.length(), '0');
 
-	//Get the width and height of the current frame
-	//float width = sharedVideoFrame->frame.size().width;
-	//float height = sharedVideoFrame->frame.size().height;
+	//MODIFICATION: Get the width and height of the current frame
+	float width = sharedVideoFrame->frame.size().width;
+	float height = sharedVideoFrame->frame.size().height;
 	
 	//Iterate over the different boxes of that frame
         for (const BboxAndDescr& bboxAndDescr : boxesAndDescrs) {
@@ -449,8 +451,8 @@ void ResAggregator::process() {
                                                                      cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y + 35},
                                                                      cv::FONT_HERSHEY_COMPLEX, 1.3, cv::Scalar(0, 255, 0), 4);
 							 
-							 //Write a .txt of the auto boxes of  the current frame
-							// WriteInFILE(frame_number + ".txt", "auto" , bboxAndDescr.rect, width, height);
+							 //MODIFICATION: Write a .txt of the auto boxes of  the current frame
+							 WriteInFILE(frame_number + ".txt", "auto" , bboxAndDescr.rect, width, height);
 							 frameDetect = true;
                                                          break;
                 case BboxAndDescr::ObjectType::PLATE: 
@@ -462,25 +464,25 @@ void ResAggregator::process() {
 
 
 
-						      //Write a .txt of the plate boxes of  the current frame
-						      //WriteInFILE(frame_number + ".txt", "placa" , bboxAndDescr.rect,  width, height);
+						      //MODIFICATION: Write a .txt of the plate boxes of  the current frame
+						      WriteInFILE(frame_number + ".txt", "placa" , bboxAndDescr.rect,  width, height);
 						      
-						      //Store the croped image of the plate
+						      //MODIFICATION: Store the croped image of the plate
 						      plate_number = std::to_string(generator2(2951)); 
 						      plate_number.insert(0, 12 - plate_number.length(), '0');
-						     // cropedImage = sharedVideoFrame->frame(bboxAndDescr.rect);
-						      //cv::resize(cropedImage,finalCropedImage, size);
-						      //cv::imwrite(PlatesPath + plate_number +".png",finalCropedImage);
+						      cropedImage = sharedVideoFrame->frame(bboxAndDescr.rect);
+						      cv::resize(cropedImage,finalCropedImage, size);
+						      cv::imwrite(PlatesPath + plate_number +".png",finalCropedImage);
 						      frameDetect = true;
                                                       break;
                 default: throw std::exception();  // must never happen
                           break;
             }
 
-	    //If we detect a car or a plate, we store the frame
+	    //MODIFICATION: If we detect a car or a plate, we store the frame
 	    if (frameDetect){
-	    	    //cv::imwrite(FramesPath + frame_number +".png",sharedVideoFrame->frame);
-		    //std::cout << "Store image: " << frame_number << ".png" << "\n";
+            cv::imwrite(FramesPath + frame_number +".png",sharedVideoFrame->frame);
+		    std::cout << "Store image: " << frame_number << ".png" << "\n";
 	    }
         }
         tryPush(context.drawersContext.drawersWorker, std::make_shared<Drawer>(sharedVideoFrame));

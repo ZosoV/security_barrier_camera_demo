@@ -30,12 +30,6 @@
 
 using namespace InferenceEngine;
 
-const std::string FramesPath = "/home/ubuntu/Project/demoExtraData/frames/";
-const std::string PlatesPath = "/home/ubuntu/Porject/demoExtraData/plates/";
-
-const int plate_width = 94;
-const int plate_height = 24;
-
 typedef std::chrono::duration<float, std::chrono::seconds::period> Sec;
 
 bool ParseAndCheckCommandLine(int argc, char *argv[]) {
@@ -383,37 +377,6 @@ void Drawer::process() {
     context.drawersContext.drawerMutex.unlock();
 }
 
-
-int generator(int n = 1) 
-{ 
- static long long int idx = n;
- return idx++;
-}
-
-
-int generator2(int n = 1) 
-{ 
- static long long int idx2 = n;
- return idx2++;
-}
-
-void WriteInFILE(std::string file_name, std::string class_name, cv::Rect rect, float width, float height){
-    std::ofstream outfile;
-    outfile.open(FramesPath + file_name, std::ios_base::app);
-
-    //Write atrributes in the following format (normalized)
-    //class_name top left width height
-    std::string y = std::to_string(rect.y / height);
-    std::string x = std::to_string(rect.x / width);
-    std::string width_str = std::to_string(rect.width / width);
-    std::string height_str = std::to_string(rect.height / height);	
-
-    std::string annotation = class_name + " " + y + " " + x + " " + width_str + " " + height_str + "\n"; 
-    outfile << annotation;
-    outfile.close();
-
-}
-
 void ResAggregator::process() {
     //Variables to store the frames
     std::string plate_number = "";
@@ -429,55 +392,33 @@ void ResAggregator::process() {
     if (!FLAGS_no_show) {
 
 	//Current frame number
-	frame_number = std::to_string(generator(1));
+	frame_number = std::to_string(generator(268402));
 	frame_number.insert(0, 12 - frame_number.length(), '0');
-
-	//Get the width and height of the current frame
-	float width = sharedVideoFrame->frame.size().width;
-	float height = sharedVideoFrame->frame.size().height;
 	
 	//Iterate over the different boxes of that frame
         for (const BboxAndDescr& bboxAndDescr : boxesAndDescrs) {
             switch (bboxAndDescr.objectType) {
                 case BboxAndDescr::ObjectType::NONE: cv::rectangle(sharedVideoFrame->frame, bboxAndDescr.rect, {255, 255, 0},  4);
                                                      break;
-                case BboxAndDescr::ObjectType::VEHICCLE: //cv::rectangle(sharedVideoFrame->frame, bboxAndDescr.rect, {0, 255, 0},  4);
-                                                         //cv::putText(sharedVideoFrame->frame, bboxAndDescr.descr,
-		                                                                     cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y + 35},
+                case BboxAndDescr::ObjectType::VEHICCLE: cv::rectangle(sharedVideoFrame->frame, bboxAndDescr.rect, {0, 255, 0},  4);
+                                                         cv::putText(sharedVideoFrame->frame, bboxAndDescr.descr,
+                                                                     cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y + 35},
                                                                      cv::FONT_HERSHEY_COMPLEX, 1.3, cv::Scalar(0, 255, 0), 4);
 							 
-							 //Write a .txt of the auto boxes of  the current frame
-							 WriteInFILE(frame_number + ".txt", "auto" , bboxAndDescr.rect, width, height);
 							 frameDetect = true;
                                                          break;
                 case BboxAndDescr::ObjectType::PLATE: 
 
-						      //cv::rectangle(sharedVideoFrame->frame, bboxAndDescr.rect, {0, 0, 255},  4);
-                                                      //cv::putText(sharedVideoFrame->frame, bboxAndDescr.descr,
+						      cv::rectangle(sharedVideoFrame->frame, bboxAndDescr.rect, {0, 0, 255},  4);
+                                                      cv::putText(sharedVideoFrame->frame, bboxAndDescr.descr,
                                                                   cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y - 10},
                                                                   cv::FONT_HERSHEY_COMPLEX, 1.3, cv::Scalar(0, 0, 255), 4);
 
-
-
-						      //Write a .txt of the plate boxes of  the current frame
-						      WriteInFILE(frame_number + ".txt", "placa" , bboxAndDescr.rect,  width, height);
-						      
-						      //Store the croped image of the plate
-						      plate_number = std::to_string(generator2(1)); 
-						      plate_number.insert(0, 12 - plate_number.length(), '0');
-						      cropedImage = sharedVideoFrame->frame(bboxAndDescr.rect);
-						      cv::resize(cropedImage,finalCropedImage, size);
-						      cv::imwrite(PlatesPath + plate_number +".png",finalCropedImage);
 						      frameDetect = true;
                                                       break;
                 default: throw std::exception();  // must never happen
                           break;
             }
-
-	    //If we detect a car or a plate, we store the frame
-	    if (frameDetect){
-	    	    cv::imwrite(FramesPath + frame_number +".png",sharedVideoFrame->frame);
-	    }
         }
         tryPush(context.drawersContext.drawersWorker, std::make_shared<Drawer>(sharedVideoFrame));
     } else {

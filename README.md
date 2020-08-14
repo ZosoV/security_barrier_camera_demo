@@ -1,4 +1,22 @@
-# Security Barrier Camera С++ Demo
+# Modification of Demo
+
+This a modification of the original security Barrier Camera C++ Demo from openvino. The idea is use the detection of these models for two objectives:
+
+- Get each frame of a video where it is identified a vehicle or plate. Store the frame and its respective normalized boxes of the plates and vehicles in `.txt` per each frame. The file `<num_fram>.txt` follows the Yolo convetions.
+
+    `class_name top left width height`
+
+The classes are plate and car.
+
+- Get a crop of each image plate of a video and store the crop.
+
+## Extra Function for Modification
+
+We changed mainly the `ResAggregator::process()` function in the `main.cpp` file. Here we use a self created function `WriteInFILE` for store the normalized bounding boxes of plates and car. Also, we establish some `generator` functions to take the indexes of the frame images and crop plates images.
+
+Each modification of the original script is commented with TAG: `//MODIFICATION:` in order to observe the changes
+
+# Documentation of Principal Project: Security Barrier Camera С++ Demo
 
 This demo showcases Vehicle and License Plate Detection network followed by the Vehicle Attributes Recognition and License Plate Recognition networks applied on top
 of the detection results. You can use a set of the following pre-trained models with the demo:
