@@ -394,7 +394,6 @@ void ResAggregator::process() {
                                                                      cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y + 35},
                                                                      cv::FONT_HERSHEY_COMPLEX, 1.3, cv::Scalar(0, 255, 0), 4);
 							 
-							 frameDetect = true;
                                                          break;
                 case BboxAndDescr::ObjectType::PLATE: 
 
@@ -403,7 +402,6 @@ void ResAggregator::process() {
                                                                   cv::Point{bboxAndDescr.rect.x, bboxAndDescr.rect.y - 10},
                                                                   cv::FONT_HERSHEY_COMPLEX, 1.3, cv::Scalar(0, 0, 255), 4);
 
-						      frameDetect = true;
                                                       break;
                 default: throw std::exception();  // must never happen
                           break;
