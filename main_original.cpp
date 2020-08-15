@@ -378,22 +378,11 @@ void Drawer::process() {
 }
 
 void ResAggregator::process() {
-    //Variables to store the frames
-    std::string plate_number = "";
-    std::string frame_number = "";
-    cv::Mat cropedImage;
-    cv::Mat finalCropedImage;
-    cv::Size size(plate_width, plate_height);
-    bool frameDetect = false;
 
     Context& context = static_cast<ReborningVideoFrame*>(sharedVideoFrame.get())->context;
     context.freeDetectionInfersCount += context.detectorsInfers.inferRequests.lockedSize();
     context.frameCounter++;
     if (!FLAGS_no_show) {
-
-	//Current frame number
-	frame_number = std::to_string(generator(268402));
-	frame_number.insert(0, 12 - frame_number.length(), '0');
 	
 	//Iterate over the different boxes of that frame
         for (const BboxAndDescr& bboxAndDescr : boxesAndDescrs) {
